@@ -3,60 +3,71 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import datetime as dt
-from progress_bar import ProgressBar
-from typing import List
+from typing import List, Optional
+from progress_bar import ProgressBar  # Assuming progress_bar is available
 
 
 class MonteCarloSimulation:
     def __init__(
         self,
         stocks: List[str],
-        endDate: dt.datetime = dt.datetime.now(),
-        startDateOffset: int = 300,
+        end_date: dt.datetime = dt.datetime.now(),
+        start_date_offset: int = 300,
     ) -> None:
-        # self.stocks = [stock + ".AX" for stock in stocks]
         self.stocks = stocks
-        self.startDate = endDate - dt.timedelta(days=startDateOffset)
-        self.endDate = endDate
-        self.meanReturns, self.covMatrix = self.load_data(
-            self.stocks, self.startDate, self.endDate
+        self.start_date = end_date - dt.timedelta(days=start_date_offset)
+        self.end_date = end_date
+        self.mean_returns, self.cov_matrix, self.returns = self.load_data(
+            self.stocks, self.start_date, self.end_date
         )
 
-        self.default_weight = np.random.random(len(self.meanReturns))
+        self.default_weight = np.random.random(len(self.mean_returns))
         self.default_weight /= np.sum(self.default_weight)
 
     @staticmethod
     def load_data(stocks: List[str], start: dt.datetime, end: dt.datetime):
-        stockData = yf.download(stocks, start=start, end=end)["Close"]
-        returns = stockData.pct_change()
-        meanReturns = returns.mean()
-        covMatrix = returns.cov()
-
-        return meanReturns, covMatrix
+        try:
+            stock_data = yf.download(stocks, start=start, end=end)["Close"]
+            returns = stock_data.pct_change().dropna()
+            mean_returns = returns.mean()
+            cov_matrix = returns.cov()
+            return mean_returns, cov_matrix, returns
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            return pd.Series(), pd.DataFrame(), pd.DataFrame()
 
     def simulate(
         self,
         num_simulations: int = 1000,
         num_days: int = 252,
-        weights: List[float] = None,
+        weights: Optional[List[float]] = None,
     ) -> pd.DataFrame:
         if weights is None:
             weights = self.default_weight
 
-        meanMatrix = np.full(
-            shape=(num_days, len(weights)), fill_value=self.meanReturns
+        mean_matrix = np.full(
+            shape=(num_days, len(weights)), fill_value=self.mean_returns
         ).T
-        meanMatrix = meanMatrix.T
+        mean_matrix = mean_matrix.T
 
         simulated_price_paths = np.zeros((num_days, num_simulations))
 
+        # Initialize the progress bar
         p_bar = ProgressBar(num_simulations, os.path.basename(__file__), bar_length=100)
 
         for i in range(num_simulations):
             Z = np.random.normal(size=(num_days, len(weights)))
-            L = np.linalg.cholesky(self.covMatrix)
-            daily_returns = meanMatrix + np.dot(Z, L.T)
+            L = np.linalg.cholesky(self.cov_matrix)
+            daily_returns = mean_matrix + np.dot(Z, L.T)
             simulated_price_paths[:, i] = np.cumprod(np.dot(daily_returns, weights) + 1)
-            p_bar.increment()
+            p_bar.increment()  # Update the progress bar
 
         return pd.DataFrame(simulated_price_paths)
+
+    @staticmethod
+    def value_at_risk(returns: np.ndarray, percentile: int = 5) -> float:
+        return np.percentile(returns, percentile)
+
+    def cond_value_at_risk(self, returns: np.ndarray, percentile: int = 5) -> float:
+        var_threshold = self.value_at_risk(returns, percentile)
+        return returns[returns <= var_threshold].mean()
