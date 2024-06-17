@@ -1,1 +1,1 @@
-# monte-carlo-simulator-for-stoc-portfolio
+# monte-carlo-simulator-for-stock-portfolio
