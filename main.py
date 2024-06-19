@@ -2,8 +2,8 @@
 from monte_carlo import MonteCarloSimulation
 import matplotlib.pyplot as plt
 
-simulation = MonteCarloSimulation(["AAPL", "MSFT"])
-simulation_results = simulation.simulate(num_simulations=1000, num_days=260)
+simulation = MonteCarloSimulation(["AAPL", "AMZN"])
+simulation_results = simulation.simulate(num_simulations=1000000, num_days=260)
 
 final_prices = simulation_results.iloc[-1, :]
 
@@ -15,15 +15,18 @@ cond_value_at_risk_5_percent = simulation.cond_value_at_risk(
     simulation_results.iloc[-1]
 )
 
-plt.plot(simulation_results)
-plt.show()
-plt.clf()
-
 print(f"Mean of Final Prices: {mean_final_price}")
 print(f"Standard Deviation of Final Prices: {std_final_price}")
 
 print("value_at_risk_5_percent: ", value_at_risk_5_percent)
 print("cond_value_at_risk_5_percent: ", cond_value_at_risk_5_percent)
+
+print(
+    {
+        simulation.stocks[i]: float(simulation.default_weight[i])
+        for i in range(len(simulation.stocks))
+    }
+)
 
 plt.hist(final_prices, bins=50, edgecolor="black")
 plt.xlabel("Final Prices")

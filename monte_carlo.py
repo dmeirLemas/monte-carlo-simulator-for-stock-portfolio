@@ -16,9 +16,8 @@ class MonteCarloSimulation:
     ) -> None:
         self.stocks = stocks
         self.start_date = end_date - dt.timedelta(days=start_date_offset)
-        self.end_date = end_date
         self.mean_returns, self.cov_matrix, self.returns = self.load_data(
-            self.stocks, self.start_date, self.end_date
+            self.stocks, self.start_date, end_date
         )
 
         self.default_weight = np.random.random(len(self.mean_returns))
@@ -47,8 +46,7 @@ class MonteCarloSimulation:
 
         mean_matrix = np.full(
             shape=(num_days, len(weights)), fill_value=self.mean_returns
-        ).T
-        mean_matrix = mean_matrix.T
+        )
 
         simulated_price_paths = np.zeros((num_days, num_simulations))
 
@@ -60,7 +58,7 @@ class MonteCarloSimulation:
             L = np.linalg.cholesky(self.cov_matrix)
             daily_returns = mean_matrix + np.dot(Z, L.T)
             simulated_price_paths[:, i] = np.cumprod(np.dot(daily_returns, weights) + 1)
-            p_bar.increment()  # Update the progress bar
+            p_bar.increment()
 
         return pd.DataFrame(simulated_price_paths)
 
