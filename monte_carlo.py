@@ -53,9 +53,9 @@ class MonteCarloSimulation:
         # Initialize the progress bar
         p_bar = ProgressBar(num_simulations, os.path.basename(__file__), bar_length=100)
 
+        L = np.linalg.cholesky(self.cov_matrix)
         for i in range(num_simulations):
             Z = np.random.normal(size=(num_days, len(weights)))
-            L = np.linalg.cholesky(self.cov_matrix)
             daily_returns = mean_matrix + np.dot(Z, L.T)
             simulated_price_paths[:, i] = np.cumprod(np.dot(daily_returns, weights) + 1)
             p_bar.increment()
