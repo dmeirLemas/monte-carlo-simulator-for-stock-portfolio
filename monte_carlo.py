@@ -1,10 +1,8 @@
-import os
 import yfinance as yf
 import pandas as pd
 import numpy as np
 import datetime as dt
 from typing import List, Optional
-from progress_bar import ProgressBar  # Assuming progress_bar is available
 
 
 class MonteCarloSimulation:
@@ -50,22 +48,13 @@ class MonteCarloSimulation:
 
         simulated_price_paths = np.zeros((num_days, num_simulations))
 
-        # Initialize the progress bar
-        p_bar = ProgressBar(num_simulations, os.path.basename(__file__), bar_length=100)
+        daily_returns_list = []
 
         L = np.linalg.cholesky(self.cov_matrix)
         for i in range(num_simulations):
-            Z = np.random.normal(size=(num_days, len(weights)))
+            Z = np.random.laplace(size=(num_days, len(weights)))
             daily_returns = mean_matrix + np.dot(Z, L.T)
             simulated_price_paths[:, i] = np.cumprod(np.dot(daily_returns, weights) + 1)
-            p_bar.increment()
+            daily_returns_list.append(np.dot(daily_returns, weights))
 
         return pd.DataFrame(simulated_price_paths)
-
-    @staticmethod
-    def value_at_risk(returns: np.ndarray, percentile: int = 5) -> float:
-        return np.percentile(returns, percentile)
-
-    def cond_value_at_risk(self, returns: np.ndarray, percentile: int = 5) -> float:
-        var_threshold = self.value_at_risk(returns, percentile)
-        return returns[returns <= var_threshold].mean()

@@ -1,3 +1,7 @@
+import threading
+import sys
+
+
 class ProgressBar:
     def __init__(
         self,
@@ -12,26 +16,31 @@ class ProgressBar:
         self.done_message = done_message
         self.update_interval = update_interval
         self.current = 0
+        self.lock = threading.Lock()
 
         print(f"\n\x1b[32m----Starting {program_name}----\x1b[0m\n")
+        print("Total amount of processes:", self.total)
 
     def update(self, current: int):
-        self.current = current
-        fraction = self.current / self.total
+        with self.lock:
+            self.current = current
+            fraction = self.current / self.total
 
-        arrow = int(fraction * self.bar_length) * "-" + ">"
-        padding = (self.bar_length - len(arrow)) * " "
+            arrow = int(fraction * self.bar_length) * "-" + ">"
+            padding = (self.bar_length - len(arrow)) * " "
 
-        if self.current == self.total:
-            ending = f"\n\n{self.done_message}\x1b[0m\n\n"
-        else:
-            ending = "\r"
+            if self.current == self.total:
+                ending = f"\n\n{self.done_message}\x1b[0m\n\n"
+            else:
+                ending = "\r"
 
-        completed = "\x1b[32m" if self.current == self.total else "\x1b[0m"
+            completed = "\x1b[32m" if self.current == self.total else "\x1b[0m"
 
-        print(
-            f"{completed}Progress: [{arrow}{padding}] {int(fraction*100)}%", end=ending
-        )
+            print(
+                f"{completed}Progress: [{arrow}{padding}] {fraction*100:.2f}%",
+                end=ending,
+            )
+            sys.stdout.flush()
 
     def increment(self, step=1):
         self.update(self.current + step)
