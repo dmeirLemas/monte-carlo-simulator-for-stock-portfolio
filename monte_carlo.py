@@ -38,6 +38,8 @@ class MonteCarloSimulation:
         num_simulations: int = 1000,
         num_days: int = 252,
         weights: Optional[List[float]] = None,
+        mu: int = 0,
+        b: int = 1,
     ) -> pd.DataFrame:
         if weights is None:
             weights = self.default_weight
@@ -52,7 +54,7 @@ class MonteCarloSimulation:
 
         L = np.linalg.cholesky(self.cov_matrix)
         for i in range(num_simulations):
-            Z = np.random.laplace(size=(num_days, len(weights)))
+            Z = np.random.laplace(mu, b, size=(num_days, len(weights)))
             daily_returns = mean_matrix + np.dot(Z, L.T)
             simulated_price_paths[:, i] = np.cumprod(np.dot(daily_returns, weights) + 1)
             daily_returns_list.append(np.dot(daily_returns, weights))

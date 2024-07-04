@@ -42,22 +42,6 @@ def simulate_monte_carlo(num_simulations, stocks, num_days):
     return final_prices_df
 
 
-def logarithmic_mean(series):
-    vector = np.sort(series.values)
-    n = len(vector)
-
-    numerator = 0
-    denominator = 0
-
-    for i in range(1, n):
-        delta_x = vector[i] - vector[i - 1]
-        log_mean = delta_x / np.log(vector[i] / vector[i - 1])
-        numerator += delta_x * np.log(vector[i])
-        denominator += delta_x
-
-    return numerator / denominator if denominator != 0 else 0
-
-
 def main():
     num_simulations = 100
     stocks = ["GOOGL", "AMZN", "MSFT"]
