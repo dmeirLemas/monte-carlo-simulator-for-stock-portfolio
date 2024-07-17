@@ -53,8 +53,6 @@ def main():
 
     CLT_final_prices = final_prices_df.mean()
 
-    print(CLT_final_prices)
-
     print("Expected Return:", CLT_final_prices.mean())
     print("Standard Deviation", CLT_final_prices.std())
 

@@ -7,23 +7,27 @@ import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
-def run_simulation(simulation, num_simulations, num_days, weights, mu: int, b: int):
+def run_simulation(simulation, num_simulations, num_days, weights):
     simulation_results = simulation.simulate(
-        num_simulations=num_simulations, num_days=num_days, weights=weights, mu=mu, b=b
+        num_simulations=num_simulations, num_days=num_days, weights=weights
     )
     final_prices = simulation_results.iloc[-1, :]
     return final_prices
 
 
-def simulate_monte_carlo(num_simulations, stocks, num_days, mu, b, weights):
+def simulate_monte_carlo(
+    num_simulations, stocks, num_days, weights, end_date, start_date_offset
+):
     final_prices_list = []
 
-    simulation = MonteCarloSimulation(stocks)
+    simulation = MonteCarloSimulation(
+        stocks=stocks, end_date=end_date, start_date_offset=start_date_offset
+    )
 
     with ProcessPoolExecutor() as executor:
         futures = [
             executor.submit(
-                run_simulation, simulation, num_simulations, num_days, weights, mu, b
+                run_simulation, simulation, num_simulations, num_days, weights
             )
             for _ in range(num_simulations * 1000)
         ]
@@ -74,18 +78,17 @@ def run_backtest(
         weights = np.random.random(len(stocks))
         weights /= np.sum(weights)
 
-        daily_percentage_change = training_data.pct_change().dropna()
-
-        mu = np.dot(daily_percentage_change.mean(), weights)
-        b = np.dot(np.sqrt(daily_percentage_change.var() / 2), weights)
+        print("*" * 50)
+        print(weights)
+        print("*" * 50)
 
         final_prices_df, weights = simulate_monte_carlo(
             num_simulations=num_simulations,
             stocks=stocks,
             num_days=num_days,
-            mu=mu,
-            b=b,
             weights=weights,
+            end_date=training_end_date,
+            start_date_offset=training_duration.days,
         )
 
         CLT_final_prices = final_prices_df.mean()
@@ -101,10 +104,6 @@ def run_backtest(
             f"Simulated mean: {CLT_final_prices.mean()}, Actual mean: {actual_portfolio_return}"
         )
 
-        print("*" * 50)
-
-        print(weights)
-
         current_start_date += training_duration
 
     return all_results
@@ -114,10 +113,10 @@ def main():
     stocks = ["GOOGL", "ABT", "MSFT"]
     overall_start_date = dt.datetime.now() - dt.timedelta(days=3 * 365)
     overall_end_date = dt.datetime.now()
-    training_duration = dt.timedelta(days=180)  # 6 months
-    testing_duration = dt.timedelta(days=180)  # 6 months
-    num_simulations = 100
-    num_days = 180  # 1 year
+    training_duration = dt.timedelta(days=180)
+    testing_duration = dt.timedelta(days=180)
+    num_simulations = 1000
+    num_days = 180
 
     results = run_backtest(
         stocks,
