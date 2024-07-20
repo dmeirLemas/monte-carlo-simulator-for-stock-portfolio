@@ -1,5 +1,5 @@
-import threading
 import sys
+import threading
 
 
 class ProgressBar:
@@ -19,7 +19,7 @@ class ProgressBar:
         self.lock = threading.Lock()
 
         print(f"\n\x1b[32m----Starting {program_name}----\x1b[0m\n")
-        print("Total amount of processes:", self.total)
+        self.update(current=0)
 
     def update(self, current: int):
         with self.lock:
