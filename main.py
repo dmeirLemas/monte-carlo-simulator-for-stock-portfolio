@@ -1,8 +1,8 @@
-from monte_carlo import MonteCarloSimulation
+from utils.monte_carlo import MonteCarloSimulation
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from progress_bar import ProgressBar
+from utils.progress_bar import ProgressBar
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
@@ -43,7 +43,7 @@ def simulate_monte_carlo(num_simulations, stocks, num_days):
 
 
 def main():
-    num_simulations = 100
+    num_simulations = 1000
     stocks = ["GOOGL", "AMZN", "MSFT"]
     num_days = 260
 

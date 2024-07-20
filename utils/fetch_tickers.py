@@ -14,7 +14,7 @@ def get_sp500_tickers():
 
 def get_company_info(tickers):
     company_info = []
-    p_bar = ProgressBar(len(tickers), os.path.basename(__file__), bar_length=100)
+    p_bar = ProgressBar(len(tickers), os.path.basename(__file__))
     for ticker in tickers:
         try:
             ticker_data = yf.Ticker(ticker)

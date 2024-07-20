@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import datetime as dt
-from monte_carlo import MonteCarloSimulation
+from utils.monte_carlo import MonteCarloSimulation
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
