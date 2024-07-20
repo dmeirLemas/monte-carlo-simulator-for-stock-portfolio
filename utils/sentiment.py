@@ -59,8 +59,7 @@ def find_sentiment_batch(texts: List[str]):
     return results
 
 
-def get_sentiment():
-    companies = get_sp500_companies()[:3]
+def get_sentiment(companies: List[str]):
     revision_dict = fetch_edits(companies)
 
     edits = {}
@@ -99,7 +98,3 @@ def get_sentiment():
             os.mkdir("Sentiment_Scores")
 
         edits_df.to_csv(f"Sentiment_Scores/{company}.csv", index_label="Date")
-
-
-if __name__ == "__main__":
-    get_sentiment()
