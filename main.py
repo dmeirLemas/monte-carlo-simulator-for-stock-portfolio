@@ -1,9 +1,11 @@
-from utils.monte_carlo import MonteCarloSimulation
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+from utils.monte_carlo import MonteCarloSimulation
 from utils.progress_bar import ProgressBar
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
 def run_simulation(simulation, num_simulations, num_days, weights):
