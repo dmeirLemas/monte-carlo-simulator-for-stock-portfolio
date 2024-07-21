@@ -90,6 +90,8 @@ def format_info(
 def analyze_sentiment(
     sentiment_pipeline, formatted_para_dict: Dict[str, Dict[str, Dict[str, Any]]]
 ):
+    total_setup = sum(len(dates) for dates in formatted_para_dict.values())
+    prog = ProgressBar(total=total_setup, program_name="to analyze sentiment.")
     for company in formatted_para_dict:
         for _, data in formatted_para_dict[company].items():
             sentiments = find_sentiment_batch(sentiment_pipeline, data["comments"])
@@ -98,6 +100,7 @@ def analyze_sentiment(
                 sentiments
             )
             del data["comments"]
+            prog.increment()
 
     return formatted_para_dict
 
